@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SnappyQR</string>
+    <string name="title">Pour scanner un QR Code,appuyer sur la touche Validez.</string>
+    <string name="validez">Validez</string>
+</resources>
