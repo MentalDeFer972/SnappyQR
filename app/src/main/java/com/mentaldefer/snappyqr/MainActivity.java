@@ -18,6 +18,8 @@ import com.google.zxing.qrcode.encoder.QRCode;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Button button;
+    Timestamp timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +50,23 @@ public class MainActivity extends AppCompatActivity {
 
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
 
+        String value = result.getContents().toString();
+
+        try {
+            Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(value);
+            timestamp = new java.sql.Timestamp(date1.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+
         if (result != null){
             Intent intent = new Intent(Intent.ACTION_INSERT)
                     .setData(CalendarContract.Events.CONTENT_URI)
                     .putExtra(CalendarContract.Events.TITLE,"SnappyQR Event")
-                    .putExtra(CalendarContract.EventDays.STARTDAY, result.getContents().toString())
-                    .putExtra(CalendarContract.EventDays.ENDDAY, result.getContents().toString());
+                    .putExtra(CalendarContract.EventDays.STARTDAY, timestamp)
+                    .putExtra(CalendarContract.EventDays.ENDDAY, timestamp);
 
             if (intent.resolveActivity(getPackageManager()) != null){
                 startActivity(intent);
