@@ -52,21 +52,12 @@ public class MainActivity extends AppCompatActivity {
 
         String value = result.getContents().toString();
 
-        try {
-            Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(value);
-            timestamp = new java.sql.Timestamp(date1.getTime());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
-
         if (result != null){
             Intent intent = new Intent(Intent.ACTION_INSERT)
                     .setData(CalendarContract.Events.CONTENT_URI)
                     .putExtra(CalendarContract.Events.TITLE,"SnappyQR Event")
-                    .putExtra(CalendarContract.EventDays.STARTDAY, timestamp)
-                    .putExtra(CalendarContract.EventDays.ENDDAY, timestamp);
+                    .putExtra(CalendarContract.EventDays.STARTDAY, value)
+                    .putExtra(CalendarContract.EventDays.ENDDAY, value);
 
             if (intent.resolveActivity(getPackageManager()) != null){
                 startActivity(intent);
