@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Button button;
-    Timestamp timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
