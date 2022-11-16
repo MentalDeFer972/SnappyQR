@@ -1,33 +1,31 @@
 package com.mentaldefer.snappyqr;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.google.zxing.qrcode.encoder.QRCode;
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Button button;
+    Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,17 +49,25 @@ public class MainActivity extends AppCompatActivity {
 
         String value = result.getContents().toString();
 
-        if (result != null){
-            Intent intent = new Intent(Intent.ACTION_INSERT)
-                    .setData(CalendarContract.Events.CONTENT_URI)
-                    .putExtra(CalendarContract.Events.TITLE,"SnappyQR Event")
-                    .putExtra(CalendarContract.EventDays.STARTDAY, value)
-                    .putExtra(CalendarContract.EventDays.ENDDAY, value);
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 
-            if (intent.resolveActivity(getPackageManager()) != null){
-                startActivity(intent);
-            }
+        Date date = null;
+
+        try {
+            date = df.parse(value);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            ContentResolver cr = getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(CalendarContract.Events.TITLE,"SnappyQR Events");
+            values.put(CalendarContract.Events.DTSTART,calendar.getTimeInMillis());
+
+            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI,values);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
-    }
-
+}
 }
