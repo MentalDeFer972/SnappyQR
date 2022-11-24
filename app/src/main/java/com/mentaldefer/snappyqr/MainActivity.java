@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Button button;
-    Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,15 +48,13 @@ public class MainActivity extends AppCompatActivity {
 
         String value = result.getContents().toString();
 
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-
-        Date date = null;
-
-        try {
-            date = df.parse(value);
+        if (value != null){
+            int year = Integer.parseInt(value.substring(6,9));
+            int mounth = Integer.parseInt(value.substring(3,4));
+            int date = Integer.parseInt(value.substring(0,1));
 
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
+            calendar.set(year,mounth,date);
 
             ContentResolver cr = getContentResolver();
             ContentValues values = new ContentValues();
@@ -65,9 +62,6 @@ public class MainActivity extends AppCompatActivity {
             values.put(CalendarContract.Events.DTSTART,calendar.getTimeInMillis());
 
             Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI,values);
-
-        } catch (ParseException e) {
-            e.printStackTrace();
         }
-}
+    }
 }
