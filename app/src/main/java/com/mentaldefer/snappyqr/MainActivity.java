@@ -24,7 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-
     TextView textView;
     Button button;
 
@@ -51,18 +50,6 @@ public class MainActivity extends AppCompatActivity {
         String value = result.getContents().toString();
 
         if (value != null) {
-            int year = Integer.parseInt(value.substring(6, 9));
-            int mounth = Integer.parseInt(value.substring(3, 4));
-            int date = Integer.parseInt(value.substring(0, 1));
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(year, mounth, date);
-
-            ContentResolver cr = getContentResolver();
-            ContentValues values = new ContentValues();
-            values.put(CalendarContract.Events.TITLE, "SnappyQR Events");
-            values.put(CalendarContract.Events.DTSTART, calendar.getTimeInMillis());
-
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -71,9 +58,20 @@ public class MainActivity extends AppCompatActivity {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
-                return;
+
+                int year = Integer.parseInt(value.substring(6, 9));
+                int mounth = Integer.parseInt(value.substring(3, 4));
+                int date = Integer.parseInt(value.substring(0, 1));
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(year, mounth, date);
+                ContentResolver cr = getContentResolver();
+                ContentValues values = new ContentValues();
+                values.put(CalendarContract.Events.TITLE, "SnappyQR Events");
+                values.put(CalendarContract.Events.DTSTART, calendar.getTimeInMillis());
+                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
             }
-            Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+
         }
     }
 }
