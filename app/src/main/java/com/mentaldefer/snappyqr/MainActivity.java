@@ -1,31 +1,31 @@
 package com.mentaldefer.snappyqr;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.CalendarContract;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+import androidx.core.content.ContextCompat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     TextView textView;
     Button button;
+
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
+    private static final int QR_SCAN_REQUEST_CODE = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,45 +33,51 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         textView = findViewById(R.id.title_app);
         button = findViewById(R.id.validez_button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new IntentIntegrator(MainActivity.this).initiateScan();
-            }
-        });
+        button.setOnClickListener(view -> checkCameraPermission());
+    }
+
+    protected void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST_CODE);
+        } else {
+            startQRScanActivity();
+        }
+    }
+
+    private void startQRScanActivity() {
+        Intent intent = new Intent(MainActivity.this, QRScanActivity.class);
+        startActivityForResult(intent, QR_SCAN_REQUEST_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-
-        String value = result.getContents().toString();
-
-        if (value != null) {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-
-                int year = Integer.parseInt(value.substring(6, 9));
-                int mounth = Integer.parseInt(value.substring(3, 4));
-                int date = Integer.parseInt(value.substring(0, 1));
-
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(year, mounth, date);
-                ContentResolver cr = getContentResolver();
-                ContentValues values = new ContentValues();
-                values.put(CalendarContract.Events.TITLE, "SnappyQR Events");
-                values.put(CalendarContract.Events.DTSTART, calendar.getTimeInMillis());
-                Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+        if (requestCode == QR_SCAN_REQUEST_CODE && resultCode == RESULT_OK) {
+            if (data != null) {
+                String qrContent = data.getStringExtra("qrContent");
+                addToCalendar(qrContent);
             }
+        }
+    }
 
+    private void addToCalendar(String qrContent) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        try{
+                Date date = dateFormat.parse(qrContent);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                        .setData(CalendarContract.Events.CONTENT_URI)
+                        .putExtra(CalendarContract.Events.TITLE,"Evénement QR Code")
+                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, calendar.getTimeInMillis())
+                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, calendar.getTimeInMillis() + 60 * 60 * 1000)
+                        .putExtra(CalendarContract.Events.ALL_DAY,true)
+                        .putExtra(CalendarContract.Events.EVENT_TIMEZONE,Calendar.getInstance().getTimeZone().getID());
+                startActivity(intent);
+
+            }catch (ParseException e) {
+                Toast.makeText(this,"Format de date incorrect dans le code QR",Toast.LENGTH_SHORT).show();
         }
     }
 }
