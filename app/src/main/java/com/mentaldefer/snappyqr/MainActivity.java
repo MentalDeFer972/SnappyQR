@@ -65,12 +65,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addToCalendar(String qrContent) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
         try{
                 Date date = dateFormat.parse(qrContent);
                 Calendar calendar = Calendar.getInstance();
-
-                if (date != null){
+                if (date != null) {
+                    String dString = date.toString();
+                    Log.i(String.valueOf(INFO), dString);
                     calendar.setTime(date);
                     Intent intent = new Intent(Intent.ACTION_INSERT)
                             .setData(CalendarContract.Events.CONTENT_URI)
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                             .putExtra(CalendarContract.Events.EVENT_TIMEZONE,Calendar.getInstance().getTimeZone().getID());
                     startActivity(intent);
                 }
+
             }catch (ParseException e) {
                 Toast.makeText(this,"Format de date incorrect dans le code QR",Toast.LENGTH_SHORT).show();
         }
