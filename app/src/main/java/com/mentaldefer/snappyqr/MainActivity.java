@@ -1,10 +1,14 @@
 package com.mentaldefer.snappyqr;
 
+import static android.util.Log.INFO;
+import static android.util.Log.VERBOSE;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,20 +65,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addToCalendar(String qrContent) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         try{
                 Date date = dateFormat.parse(qrContent);
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
 
-                Intent intent = new Intent(Intent.ACTION_INSERT)
-                        .setData(CalendarContract.Events.CONTENT_URI)
-                        .putExtra(CalendarContract.Events.TITLE,"Evénement QR Code")
-                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, calendar.getTimeInMillis())
-                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, calendar.getTimeInMillis() + 60 * 60 * 1000)
-                        .putExtra(CalendarContract.Events.ALL_DAY,true)
-                        .putExtra(CalendarContract.Events.EVENT_TIMEZONE,Calendar.getInstance().getTimeZone().getID());
-                startActivity(intent);
+                if (date != null){
+                    calendar.setTime(date);
+                    Intent intent = new Intent(Intent.ACTION_INSERT)
+                            .setData(CalendarContract.Events.CONTENT_URI)
+                            .putExtra(CalendarContract.Events.TITLE,"Evénement QR Code")
+                            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, calendar.getTimeInMillis())
+                            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, calendar.getTimeInMillis() + 60 * 60 * 1000)
+                            .putExtra(CalendarContract.Events.ALL_DAY,true)
+                            .putExtra(CalendarContract.Events.EVENT_TIMEZONE,Calendar.getInstance().getTimeZone().getID());
+                    startActivity(intent);
+                }
+
 
             }catch (ParseException e) {
                 Toast.makeText(this,"Format de date incorrect dans le code QR",Toast.LENGTH_SHORT).show();
